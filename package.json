@@ -1,22 +1,43 @@
 {
-  "name": "piru.app",
+  "name": "piru",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "DARK_MODE=media expo start --android",
+    "ios": "DARK_MODE=media expo start --ios",
+    "web": "DARK_MODE=media expo start --web"
   },
   "dependencies": {
+    "@expo/vector-icons": "^14.1.0",
+    "@gluestack-ui/icon": "^0.1.27",
+    "@gluestack-ui/nativewind-utils": "^1.0.26",
+    "@gluestack-ui/overlay": "^0.1.22",
+    "@gluestack-ui/toast": "^1.0.9",
+    "@react-native-community/blur": "^4.4.1",
+    "babel-plugin-module-resolver": "^5.0.2",
     "expo": "~53.0.20",
+    "expo-constants": "^17.1.7",
+    "expo-dev-client": "~5.2.4",
+    "expo-linear-gradient": "~14.1.5",
+    "expo-linking": "^7.1.7",
+    "expo-router": "^5.1.4",
     "expo-status-bar": "~2.2.3",
+    "expo-web-browser": "^14.2.0",
+    "lightningcss": "^1.30.1",
+    "nativewind": "^4.1.23",
     "react": "19.0.0",
-    "react-native": "0.79.5"
+    "react-native": "0.79.5",
+    "react-native-css-interop": "^0.1.22",
+    "react-native-reanimated": "^4.0.1",
+    "react-native-safe-area-context": "^5.6.0",
+    "react-native-svg": "15.2.0",
+    "tailwindcss": "3.4.17"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~19.0.10",
+    "jscodeshift": "0.15.2",
     "typescript": "~5.8.3"
   },
   "private": true

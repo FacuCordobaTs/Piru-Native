@@ -1,0 +1,10 @@
+{
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "piru-app/app/globals.css"
+  },
+  "app": {
+    "entry": "App.tsx",
+    "components": "components/ui"
+  }
+}
