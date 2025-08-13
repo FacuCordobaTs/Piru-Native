@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, ImageBackground, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '@/context/UserProvider';
+import { T } from '@/components/ui/T';
 
 export default function IndexScreen() {
   const router = useRouter();
@@ -69,41 +71,59 @@ export default function IndexScreen() {
               />
               
               {/* App name */}
-              <Text className="text-xs uppercase tracking-widest text-white/90 font-medium">
+              <T className="text-xs uppercase tracking-widest text-white/90 font-medium">
                 piru.app
-              </Text>
+              </T>
               
               {/* Main title */}
-              <Text className="text-3xl font-extrabold text-white text-center leading-tight">
+              <T className="text-3xl font-cinzel-bold text-white text-center leading-tight">
                 Tu camino a la mejor versión de ti comienza ahora
-              </Text>
+              </T>
               
               {/* Description */}
-              <Text className="text-white/80 text-sm text-center">
+              <T className="text-white/80 text-sm text-center">
                 Combina hábitos, NoFap y progreso RPG para forjar tu leyenda.
-              </Text>
+              </T>
             </View>
 
             {/* Start Button */}
             <TouchableOpacity
               onPress={handleStartJourney}
-              className="mt-6 w-full px-4 py-3 rounded-xl"
+              className="mt-6 w-full"
+              activeOpacity={0.9}
               style={{
-                backgroundColor: 'rgba(90, 90, 90, 0.6)',
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.5)',
+                paddingVertical: 16,
+                borderRadius: 12,
+                overflow: 'hidden',
               }}
-              activeOpacity={0.8}
             >
-              <Text className="text-white text-center font-semibold">
-                Comenzar
-              </Text>
+              <View style={{
+                width: '100%',
+                paddingHorizontal: 6,
+                paddingVertical: 6,
+                borderRadius: 12,
+                borderWidth: 3,
+                borderTopColor: '#FFED4A',
+                borderLeftColor: '#FFED4A',
+                borderRightColor: '#B8860B',
+                borderBottomColor: '#B8860B',
+                shadowColor: '#DAA520',
+                backgroundColor: '#DAA520',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.8,
+                shadowRadius: 6,
+                elevation: 8,
+              }}>
+                    <T className="text-black font-cinzel-bold text-base text-center">
+                    Comenzar
+                  </T>
+              </View>
             </TouchableOpacity>
             
             {/* Subtitle */}
-            <Text className="mt-3 text-center text-xs text-white/70">
+            <T className="mt-3 text-center text-xs text-white">
               Listo para tu aventura
-            </Text>
+            </T>
           </View>
         </View>
       </SafeAreaView>

@@ -1,4 +1,4 @@
-import gluestackPlugin from '@gluestack-ui/nativewind-utils/tailwind-plugin';
+const gluestackPlugin = require('@gluestack-ui/nativewind-utils/tailwind-plugin');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -15,6 +15,9 @@ module.exports = {
       pattern:
         /(bg|border|text|stroke|fill)-(primary|secondary|tertiary|error|success|warning|info|typography|outline|background|indicator)-(0|50|100|200|300|400|500|600|700|800|900|950|white|gray|black|error|warning|muted|success|info|light|dark|primary)/,
     },
+    'font-cinzel',
+    'font-cinzel-bold',
+    'font-cinzel-black',
   ],
   theme: {
     extend: {
@@ -179,6 +182,9 @@ module.exports = {
         body: undefined,
         mono: undefined,
         roboto: ['Roboto', 'sans-serif'],
+        cinzel: ['Cinzel_400Regular'],
+        'cinzel-bold': ['Cinzel_700Bold'],
+        'cinzel-black': ['Cinzel_900Black'],
       },
       fontWeight: {
         extrablack: '950',

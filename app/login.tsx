@@ -1,20 +1,111 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Alert, ImageBackground, SafeAreaView } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, Alert, ImageBackground, SafeAreaView, useWindowDimensions, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
+import { T } from '@/components/ui/T';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useUser } from '@/context/UserProvider';
 
 // Configure WebBrowser for OAuth
 WebBrowser.maybeCompleteAuthSession();
 
+// Glassmorphism card component with blur effect
+const BlurredCard = ({ children, style }: { children: React.ReactNode, style?: any }) => {
+  const [layout, setLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const cardRef = useRef<View>(null);
+  const { width, height } = useWindowDimensions();
+
+  return (
+    <View
+      ref={cardRef}
+      onLayout={() => {
+        cardRef.current?.measure((fx, fy, cardWidth, cardHeight, px, py) => {
+          setLayout({ x: px, y: py, width: cardWidth, height: cardHeight });
+        });
+      }}
+      style={[styles.blurredCardContainer, style]}
+    >
+      <ImageBackground
+        source={require('../assets/images/login-landscape.jpg')}
+        style={[
+          styles.blurredImage,
+          {
+            top: -layout.y,
+            left: -layout.x,
+            width: width,
+            height: height,
+          },
+        ]}
+        blurRadius={15}
+      />
+      <View style={styles.contentOverlay}>
+        {children}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  blurredCardContainer: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    overflow: 'hidden',
+  },
+  blurredImage: {
+    position: 'absolute',
+    zIndex: -1,
+  },
+  contentOverlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    padding: 24,
+  },
+  mainCard: {
+    width: '100%',
+    maxWidth: 400,
+  },
+  
+  ironButton: {
+    paddingVertical: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  ironButtonGradient: {
+    flex: 1,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  ironButtonBorder: {
+    width: '100%',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 3,
+    borderTopColor: '#4a4a4a',
+    borderLeftColor: '#4a4a4a',
+    borderRightColor: '#1a1a1a',
+    borderBottomColor: '#1a1a1a',
+    shadowColor: '#000000',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  
+  ironButtonDisabled: {
+    opacity: 1,
+  },
+});;
+
 export default function LoginScreen() {
+  const { login, isLoading } = useUser();
+
   const handleGoogleSignIn = async () => {
     try {
-      // For now, simulate successful login and go to quiz
-      // In production, implement actual Google OAuth here
-      console.log('Google sign in pressed - navigating to quiz');
-      router.push('/quiz');
+      await login();
     } catch (error) {
       console.error('Google sign in error:', error);
       Alert.alert('Error', 'Ha ocurrido un error durante el inicio de sesión');
@@ -42,7 +133,7 @@ export default function LoginScreen() {
       />
       
       {/* Overlay */}
-      <View className="absolute inset-0 bg-black/65" />
+      <View className="absolute inset-0 bg-black/30" />
 
       {/* Content */}
       <SafeAreaView className="flex-1 relative z-10">
@@ -61,74 +152,82 @@ export default function LoginScreen() {
 
         {/* Main Content */}
         <View className="flex-1 justify-center items-center p-4">
-          {/* Glassmorphism Card */}
-          <View className="w-full max-w-md p-6 rounded-2xl" style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.2)',
-          }}>
+          <BlurredCard style={styles.mainCard}>
             {/* Header with shield icon */}
             <View className="flex-row items-center justify-center mb-3">
               <Ionicons name="shield-checkmark" size={16} color="rgba(255, 255, 255, 0.9)" />
-              <Text className="text-xs uppercase tracking-widest text-white/90 font-medium ml-2">
+              <T className="text-xs uppercase tracking-widest text-white/90 font-medium ml-2">
                 SINCRONIZA TU PROGRESO
-              </Text>
+              </T>
             </View>
 
             {/* Title */}
-            <Text className="text-2xl font-extrabold text-white text-center mb-2">
+            <T className="text-2xl font-cinzel-bold text-white text-center mb-2">
               Guarda tu progreso
-            </Text>
+            </T>
             
             {/* Description */}
-            <Text className="text-sm text-white/85 text-center mb-6">
+            <T className="text-sm text-white/85 text-center mb-6">
               Sincroniza tu aventura en todos tus dispositivos y nunca pierdas tu progreso.
-            </Text>
+            </T>
 
             {/* Google Button */}
-            <TouchableOpacity 
+            
+            <TouchableOpacity
               onPress={handleGoogleSignIn}
-              className="w-full h-12 rounded-xl bg-white flex-row items-center justify-center mb-4"
+              disabled={isLoading}
+              className="w-full flex-row items-center justify-center"
+              activeOpacity={0.9}
               style={{
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 3,
+                paddingBottom: 16,
+                borderRadius: 12,
+                overflow: 'hidden',
+                opacity: isLoading ? 0.6 : 1,
               }}
-              activeOpacity={0.8}
             >
-              <Ionicons name="logo-google" size={20} color="#4285F4" />
-              <Text className="text-slate-900 font-semibold ml-3">
-                Continuar con Google
-              </Text>
+              <View style={{
+                width: '100%',
+                paddingHorizontal: 6,
+                paddingVertical: 12,
+                borderRadius: 12,
+                borderWidth: 3,
+                borderTopColor: '#FFED4A',
+                borderLeftColor: '#FFED4A',
+                borderRightColor: '#B8860B',
+                borderBottomColor: '#B8860B',
+                shadowColor: '#DAA520',
+                backgroundColor: '#DAA520',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.8,
+                shadowRadius: 6,
+                elevation: 8,
+              }}>
+              <T className="text-slate-900 font-cinzel-bold ml-3 text-center">
+                {isLoading ? 'Conectando...' : 'Continuar con Google'}
+              </T>
+              </View>
             </TouchableOpacity>
 
             {/* Benefits text */}
-            <Text className="text-xs text-white/75 text-center mb-5">
+            <T className="text-xs text-white/75 text-center mb-5">
               Respaldo seguro • Compite con tu Guild • Progreso en la nube
-            </Text>
+            </T>
 
             {/* Skip button */}
-            <TouchableOpacity 
-              onPress={handleSkipLogin}
-              className="w-full py-2.5 rounded-xl"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-              }}
-              activeOpacity={0.8}
+            <TouchableOpacity
+               onPress={handleSkipLogin}
+              activeOpacity={0.9}
+              style={styles.ironButton}
             >
-              <Text className="text-white text-sm text-center">
-                Entrar sin cuenta por ahora
-              </Text>
+                  <View style={styles.ironButtonBorder}>
+                  <T className="text-white font-cinzel text-base text-center">
+                    Entrar sin cuenta por ahora
+                  </T>
+                </View>
             </TouchableOpacity>
-          </View>
+          </BlurredCard>
         </View>
       </SafeAreaView>
     </View>
   );
 }
-
-
