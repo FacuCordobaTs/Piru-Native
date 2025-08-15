@@ -17,12 +17,12 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.piru.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a1a2e"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.Piru"
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "favicon": "./assets/favicon.png"

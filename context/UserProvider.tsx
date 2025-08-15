@@ -54,7 +54,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // API Configuration
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = 'https://api.piru.app/api';
 
 // API Helper functions
 const apiCall = async (endpoint: string, options: RequestInit = {}) => {
@@ -83,13 +83,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [stats, setStats] = useState<UserStats | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  console.log(user)
+  const isAuthenticated = !!token && !!user;
 
-  // Check for existing token on app start
+  // Initialize app - check for existing token
   useEffect(() => {
-    checkAuthStatus();
+    initializeApp();
   }, []);
 
-  const checkAuthStatus = async () => {
+  const initializeApp = async () => {
     try {
       const storedToken = await AsyncStorage.getItem('authToken');
       if (storedToken) {
@@ -97,21 +99,26 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         await refreshUserData();
       }
     } catch (error) {
-      console.error('Error checking auth status:', error);
+      console.error('Error initializing app:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Google OAuth Login
   const login = async () => {
     try {
       setIsLoading(true);
       
-      // Start Google OAuth flow
-      const redirectUrl = 'exp://192.168.1.100:8081'; // Update with your Expo dev server URL
-      const authUrl = `${API_BASE_URL}/auth/google?redirect_uri=${encodeURIComponent(redirectUrl)}`;
+      // Configure redirect URI for React Native
+      // For development, use your local IP or localhost
+      // For production, use your app's custom scheme
+      const redirectUri = 'piru://quiz';          // For production app
       
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
+      // Start OAuth flow
+      const authUrl = `${API_BASE_URL}/auth/google?redirect_uri=${encodeURIComponent(redirectUri)}`;
+      
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
       
       if (result.type === 'success' && result.url) {
         // Extract token from URL
@@ -122,7 +129,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           await AsyncStorage.setItem('authToken', tokenParam);
           setToken(tokenParam);
           await refreshUserData();
-          router.push('/quiz'); // Navigate to quiz after successful login
+          router.replace('/(tabs)/home');
         } else {
           throw new Error('No token received from OAuth');
         }
@@ -139,6 +146,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Logout
   const logout = async () => {
     try {
       await AsyncStorage.removeItem('authToken');
@@ -152,22 +160,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Refresh user data
   const refreshUserData = async () => {
     try {
-      if (!token) return;
+      const [profileResponse, statsResponse] = await Promise.all([
+        apiCall('/user/profile'),
+        apiCall('/user/stats')
+      ]);
 
-      // Get user profile and settings
-      const profileResponse = await apiCall('/user/profile');
-      if (profileResponse.success) {
-        setUser(profileResponse.data.user);
-        setSettings(profileResponse.data.settings);
-      }
-
-      // Get user stats
-      const statsResponse = await apiCall('/user/stats');
-      if (statsResponse.success) {
-        setStats(statsResponse.data);
-      }
+      setUser(profileResponse.data.user);
+      setSettings(profileResponse.data.settings);
+      setStats(statsResponse.data);
     } catch (error) {
       console.error('Error refreshing user data:', error);
       // If token is invalid, logout
@@ -177,70 +180,90 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Update user profile
   const updateUserProfile = async (data: Partial<User>) => {
     try {
-      const response = await apiCall('/user/profile', {
+      await apiCall('/user/profile', {
         method: 'PUT',
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
       });
-      
-      if (response.success && user) {
-        setUser({ ...user, ...data });
-      }
-      
-      return response;
+      await refreshUserData();
     } catch (error) {
       console.error('Error updating profile:', error);
       throw error;
     }
   };
 
+  // Update user settings
   const updateUserSettings = async (data: Partial<UserSettings>) => {
     try {
-      const response = await apiCall('/user/settings', {
+      await apiCall('/user/settings', {
         method: 'PUT',
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
       });
-      
-      if (response.success && settings) {
-        setSettings({ ...settings, ...data });
-      }
-      
-      return response;
+      await refreshUserData();
     } catch (error) {
       console.error('Error updating settings:', error);
       throw error;
     }
   };
 
+  // Add experience points
   const addExperience = async (experience: number) => {
     try {
       const response = await apiCall('/user/experience', {
         method: 'POST',
-        body: JSON.stringify({ experience }),
+        body: JSON.stringify({ experience })
       });
       
-      if (response.success) {
-        await refreshUserData(); // Refresh to get updated stats
-        return response.data;
+      // Update local state immediately for better UX
+      if (user && stats) {
+        setUser(prev => prev ? {
+          ...prev,
+          experience: response.data.newExperience,
+          level: response.data.newLevel,
+          experienceToNext: response.data.newExperienceToNext
+        } : null);
+        
+        setStats(prev => prev ? {
+          ...prev,
+          experience: response.data.newExperience,
+          level: response.data.newLevel,
+          experienceToNext: response.data.newExperienceToNext
+        } : null);
       }
+      
+      return response.data;
     } catch (error) {
       console.error('Error adding experience:', error);
       throw error;
     }
   };
 
+  // Update user streak
   const updateStreak = async (currentStreak: number) => {
     try {
       const response = await apiCall('/user/streak', {
         method: 'PUT',
-        body: JSON.stringify({ currentStreak }),
+        body: JSON.stringify({ currentStreak })
       });
       
-      if (response.success) {
-        await refreshUserData(); // Refresh to get updated stats
-        return response.data;
+      // Update local state immediately
+      if (user && stats) {
+        setUser(prev => prev ? {
+          ...prev,
+          currentStreak: response.data.currentStreak,
+          longestStreak: response.data.longestStreak
+        } : null);
+        
+        setStats(prev => prev ? {
+          ...prev,
+          currentStreak: response.data.currentStreak,
+          longestStreak: response.data.longestStreak
+        } : null);
       }
+      
+      return response.data;
     } catch (error) {
       console.error('Error updating streak:', error);
       throw error;
@@ -252,7 +275,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     settings,
     stats,
     isLoading,
-    isAuthenticated: !!token,
+    isAuthenticated,
     token,
     login,
     logout,
@@ -270,6 +293,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
+// Hook to use the user context
 export const useUser = () => {
   const context = useContext(UserContext);
   if (context === undefined) {

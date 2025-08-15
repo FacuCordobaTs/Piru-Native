@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, Alert, ImageBackground, SafeAreaView, useWindowDimensions, StyleSheet } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Alert, ImageBackground, SafeAreaView, useWindowDimensions, StyleSheet, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -101,14 +101,30 @@ const styles = StyleSheet.create({
 });;
 
 export default function LoginScreen() {
-  const { login, isLoading } = useUser();
+  const { login, isLoading, isAuthenticated } = useUser();
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      router.replace('/(tabs)/home');
+    }
+  }, [isAuthenticated, isLoading]);
 
   const handleGoogleSignIn = async () => {
     try {
+      setIsSigningIn(true);
       await login();
+      // The UserProvider will handle navigation to home after successful login
     } catch (error) {
       console.error('Google sign in error:', error);
-      Alert.alert('Error', 'Ha ocurrido un error durante el inicio de sesión');
+      Alert.alert(
+        'Error de Autenticación', 
+        'No se pudo completar el inicio de sesión con Google. Por favor, inténtalo de nuevo.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
@@ -172,17 +188,16 @@ export default function LoginScreen() {
             </T>
 
             {/* Google Button */}
-            
             <TouchableOpacity
               onPress={handleGoogleSignIn}
-              disabled={isLoading}
+              disabled={isSigningIn || isLoading}
               className="w-full flex-row items-center justify-center"
               activeOpacity={0.9}
               style={{
                 paddingBottom: 16,
                 borderRadius: 12,
                 overflow: 'hidden',
-                opacity: isLoading ? 0.6 : 1,
+                opacity: (isSigningIn || isLoading) ? 0.7 : 1,
               }}
             >
               <View style={{
@@ -202,9 +217,18 @@ export default function LoginScreen() {
                 shadowRadius: 6,
                 elevation: 8,
               }}>
-              <T className="text-slate-900 font-cinzel-bold ml-3 text-center">
-                {isLoading ? 'Conectando...' : 'Continuar con Google'}
-              </T>
+                {isSigningIn || isLoading ? (
+                  <View className="flex-row items-center justify-center">
+                    <ActivityIndicator size="small" color="#1a1a1a" />
+                    <T className="text-slate-900 font-cinzel-bold ml-3 text-center">
+                      Conectando...
+                    </T>
+                  </View>
+                ) : (
+                  <T className="text-slate-900 font-cinzel-bold ml-3 text-center">
+                    Continuar con Google
+                  </T>
+                )}
               </View>
             </TouchableOpacity>
 

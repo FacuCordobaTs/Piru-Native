@@ -1,7 +1,9 @@
 import { Slot } from 'expo-router';
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { UserProvider } from '@/context/UserProvider';
+import { HabitsProvider } from '@/context/HabitsProvider';
 import { useFonts, Cinzel_400Regular, Cinzel_700Bold, Cinzel_900Black } from '@expo-google-fonts/cinzel';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
 
 export default function RootLayout() {
@@ -16,10 +18,14 @@ export default function RootLayout() {
   }
 
   return (
-    <GluestackUIProvider mode="light">
-      <UserProvider>
-        <Slot />
-      </UserProvider>
-    </GluestackUIProvider>
+    <SafeAreaProvider>
+      <GluestackUIProvider mode="light">
+        <UserProvider>
+          <HabitsProvider>
+            <Slot />
+          </HabitsProvider>
+        </UserProvider>
+      </GluestackUIProvider>
+    </SafeAreaProvider>
   );
 }

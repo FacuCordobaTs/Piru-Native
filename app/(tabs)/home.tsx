@@ -1,26 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, Image, Animated, StyleSheet, ScrollView, ImageBackground, useWindowDimensions, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, Image, Animated, StyleSheet, ScrollView, ImageBackground, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { T } from '@/components/ui/T';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useUser } from '@/context/UserProvider';
-import { useHabits } from '@/hooks/useHabits';
-import { Ionicons } from '@expo/vector-icons';
+import { Habit, useHabits } from '@/context/HabitsProvider';
 
 // Import images
 const mascotImage = require('../../assets/images/piru-transparent.png');
-const backgroundImage = require('../../assets/images/Landscape-start.jpg');
+const backgroundImage = require('../../assets/images/nivel1.jpg');
 
 // Custom icons using emoji
-const FlameIcon = () => <Text style={styles.icon}>🔥</Text>;
-const PlusIcon = () => <Text style={styles.icon}>➕</Text>;
-const ClockIcon = () => <Text style={styles.icon}>⏰</Text>;
-const CheckIcon = () => <Text style={styles.checkIcon}>✓</Text>;
-const SwordIcon = () => <Text style={styles.icon}>⚔️</Text>;
-const ShieldIcon = () => <Text style={styles.icon}>🛡️</Text>;
+const FlameIcon = () => <Text className="text-base text-yellow-400">🔥</Text>;
+const PlusIcon = () => <Text className="text-base text-yellow-400">➕</Text>;
+const ClockIcon = () => <Text className="text-base text-yellow-400">⏰</Text>;
+const SwordIcon = () => <Text className="text-base text-yellow-400">⚔️</Text>;
+const ShieldIcon = () => <Text className="text-base text-yellow-400">🛡️</Text>;
 
 // BlurredCard component for true glassmorphism effect
-const BlurredCard = ({ children, style }: { children: React.ReactNode, style?: any }) => {
+const BlurredCard = ({ children, style, className }: { children: React.ReactNode, style?: any, className?: string }) => {
   const [layout, setLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const cardRef = useRef<View>(null);
   const { width, height } = useWindowDimensions();
@@ -33,7 +29,8 @@ const BlurredCard = ({ children, style }: { children: React.ReactNode, style?: a
           setLayout({ x: px, y: py, width: cardWidth, height: cardHeight });
         });
       }}
-      style={[styles.blurredCardContainer, style]}
+      className={`relative rounded-2xl overflow-hidden mb-4 ${className || ''}`}
+      style={style}
     >
       <Image
         source={backgroundImage}
@@ -48,7 +45,7 @@ const BlurredCard = ({ children, style }: { children: React.ReactNode, style?: a
         ]}
         blurRadius={20}
       />
-      <View style={styles.contentOverlay}>
+      <View className="bg-black/30 p-4">
         {children}
       </View>
     </View>
@@ -57,7 +54,7 @@ const BlurredCard = ({ children, style }: { children: React.ReactNode, style?: a
 
 // Glassmorphism card component with enhanced styling
 const GlassCard = ({ children, style }: { children: React.ReactNode, style?: any }) => (
-  <View style={[styles.glassCard, style]}>
+  <View className="rounded-2xl border border-yellow-400/30 p-4 mb-4" style={style}>
     {children}
   </View>
 );
@@ -69,26 +66,24 @@ const WeeklyCalendar = () => {
   const today = 17;
 
   return (
-    <BlurredCard style={styles.calendarCard}>
-      <View style={styles.calendarHeader}>
+    <BlurredCard className="mb-6">
+      <View className="flex-row items-center mb-4">
         <SwordIcon />
-        <Text style={styles.calendarTitle}>Semana del Guerrero</Text>
+        <Text className="text-lg font-bold text-white ml-2">Semana del Guerrero</Text>
       </View>
-      <View style={styles.calendarContainer}>
+      <View className="flex-row justify-between items-center">
         {days.map((day, index) => (
-          <View key={day} style={styles.calendarDay}>
-            <Text style={styles.calendarDayText}>{day}</Text>
+          <View key={day} className="items-center">
+            <Text className="text-xs text-white/70 mb-2">{day}</Text>
             <View
-              style={[
-                styles.calendarDate,
-                dates[index] === today && styles.calendarDateToday
-              ]}
+              className={`w-10 h-10 rounded-full items-center justify-center border border-white/20 bg-white/10 ${
+                dates[index] === today ? 'bg-white/40 scale-110' : ''
+              }`}
             >
               <Text
-                style={[
-                  styles.calendarDateText,
-                  dates[index] === today && styles.calendarDateTextToday
-                ]}
+                className={`text-sm font-bold ${
+                  dates[index] === today ? 'text-white' : 'text-white/90'
+                }`}
               >
                 {dates[index]}
               </Text>
@@ -102,11 +97,11 @@ const WeeklyCalendar = () => {
 
 // Mascot Section Component with enhanced styling
 const MascotSection = () => (
-  <BlurredCard style={styles.mascotCard}>
-    <View style={styles.mascotContainer}>
-      <View style={styles.mascotImageContainer}>
-        <View style={styles.mascotImageBorder}>
-          <Image source={mascotImage} style={styles.mascotImage} />
+  <BlurredCard>
+    <View className="flex-row items-center justify-center gap-4">
+      <View className="relative">
+        <View className="w-32 h-32 overflow-hidden">
+          <Image source={mascotImage} className="w-full h-full" style={{ objectFit: 'contain' }} />
         </View>
         <View style={styles.mascotBadge}>
           <FlameIcon />
@@ -150,19 +145,17 @@ const CelebrationAnimation = ({ habit }: { habit: any }) => {
 
   return (
     <Animated.View
-      style={[
-        styles.celebrationContainer,
-        {
-          transform: [{ scale: scaleAnim }],
-          opacity: opacityAnim,
-        },
-      ]}
+      className="absolute inset-0 items-center justify-center z-10"
+      style={{
+        transform: [{ scale: scaleAnim }],
+        opacity: opacityAnim,
+      }}
     >
       <GlassCard style={styles.celebrationCard}>
-        <View style={styles.celebrationContent}>
-          <Text style={styles.celebrationEmoji}>⚔️</Text>
-          <Text style={styles.celebrationTitle}>¡Racha +1!</Text>
-          <Text style={styles.celebrationSubtitle}>{habit.streak + 1} días de gloria</Text>
+        <View className="items-center">
+          <Text className="text-3xl mb-2">⚔️</Text>
+          <Text className="text-lg font-bold text-yellow-400 mb-1">¡Racha +1!</Text>
+          <Text className="text-sm text-white/90">{habit.streak + 1} días de gloria</Text>
         </View>
       </GlassCard>
     </Animated.View>
@@ -219,21 +212,19 @@ const Confetti = ({ onDone }: { onDone?: () => void }) => {
   }, []);
 
   return (
-    <View style={styles.confettiContainer} pointerEvents="none">
+    <View className="absolute inset-0 z-20" pointerEvents="none">
       {confettiPieces.map((piece) => (
         <Animated.View
           key={piece.id}
-          style={[
-            styles.confettiPiece,
-            {
-              backgroundColor: piece.color,
-              transform: [
-                { translateY: piece.translateY },
-                { translateX: piece.translateX },
-              ],
-              left: piece.left,
-            },
-          ]}
+          className="absolute w-3 h-3 rounded-full"
+          style={{
+            backgroundColor: piece.color,
+            transform: [
+              { translateY: piece.translateY },
+              { translateX: piece.translateX },
+            ],
+            left: piece.left,
+          }}
         />
       ))}
     </View>
@@ -241,19 +232,35 @@ const Confetti = ({ onDone }: { onDone?: () => void }) => {
 };
 
 // Habit Item Component with enhanced styling
-const HabitItem = ({ habit, onComplete, celebration }: { habit: any, onComplete: (id: number) => void, celebration: number | null }) => {
+const HabitItem = ({ habit, onComplete }: { habit: Habit, onComplete: (id: number) => void }) => {
   const [showConfetti, setShowConfetti] = useState(false);
-  const [isCompleting, setIsCompleting] = useState(false);
+  console.log(habit)
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case "Done":
+        return 'bg-green-500/30 border-green-500/50';
+      case "Skip":
+        return 'bg-yellow-500/30 border-yellow-500/50';
+      default:
+        return 'bg-blue-500/30 border-blue-500/50';
+    }
+  };
 
-  const handleComplete = async () => {
-    try {
-      setIsCompleting(true);
-      await onComplete(habit.id);
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "Done":
+        return "Done";
+      case "Skip":
+        return "Skip";
+      default:
+        return "New";
+    }
+  };
+
+  const handleComplete = () => {
+    if (habit.currentStreak === 0) {
       setShowConfetti(true);
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo completar el hábito');
-    } finally {
-      setIsCompleting(false);
+      onComplete(habit.id);
     }
   };
 
@@ -262,63 +269,62 @@ const HabitItem = ({ habit, onComplete, celebration }: { habit: any, onComplete:
   };
 
   return (
-    <View style={styles.habitItemContainer}>
+    <View className="relative">
       <TouchableOpacity
-        style={[
-          styles.habitCard,
-          habit.completed && styles.habitCardCompleted
-        ]}
+        className={`rounded-2xl border border-yellow-400/30 p-5 mb-4 ${
+          habit.currentStreak > 0 ? 'opacity-80 bg-green-500/20' : 'bg-white/15'
+        }`}
         onPress={handleComplete}
         activeOpacity={0.8}
       >
-        <View style={styles.habitContent}>
-          <View style={styles.habitLeft}>
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-4 flex-1">
             <View
-              style={[
-                styles.habitCheckbox,
-                habit.completed && styles.habitCheckboxCompleted
-              ]}
+              className={`w-8 h-8 rounded-full border-2 items-center justify-center ${
+                habit.currentStreak > 0 
+                  ? 'bg-green-500 border-green-500' 
+                  : 'border-yellow-400/50 bg-white/10'
+              }`}
+              style={habit.currentStreak > 0 ? styles.habitCheckboxCompletedShadow : {}}
             >
-              {habit.completed && <ShieldIcon />}
+              {habit.currentStreak > 0 && <ShieldIcon />}
             </View>
 
-            <View style={styles.habitInfo}>
-              <View style={styles.habitHeader}>
-                <Text style={styles.habitIcon}>{habit.icon}</Text>
+            <View className="flex-1">
+              <View className="flex-row items-center gap-2 mb-2">
                 <Text
-                  style={[
-                    styles.habitName,
-                    habit.completed && styles.habitNameCompleted
-                  ]}
+                  className={`text-base font-bold text-white ${
+                    habit.currentStreak > 0 ? 'line-through opacity-70' : ''
+                  }`}
                 >
                   {habit.name}
                 </Text>
               </View>
-                          <View style={styles.habitStatus}>
-              <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>Activo</Text>
+              <View className="flex-row items-center gap-2">
+                <View className={`px-3 py-1.5 rounded-xl border ${getStatusStyle(habit.currentStreak > 0 ? 'Done' : 'New')}`}>
+                  <Text className="text-xs font-bold text-white">{getStatusText(habit.currentStreak > 0 ? 'Done' : 'New')}</Text>
+                </View>
               </View>
-            </View>
             </View>
           </View>
 
-          <View style={styles.habitRight}>
-            <View style={styles.streakContainer}>
+          <View className="items-end">
+            <View className="flex-row items-center gap-1 mb-1">
               <FlameIcon />
-              <Text style={styles.streakText}>{habit.currentStreak}</Text>
+              <Text className="text-xl font-bold text-yellow-400">{habit.currentStreak}</Text>
             </View>
-            <View style={styles.durationContainer}>
+            <View className="flex-row items-center gap-1">
               <ClockIcon />
-              <Text style={styles.durationText}>+{habit.experienceReward} XP</Text>
+              <Text className="text-xs text-white/70">{habit.reminderTime}</Text>
             </View>
           </View>
         </View>
       </TouchableOpacity>
 
       {/* Celebration Animation */}
-      {celebration === habit.id && (
+      {/* {celebration === habit.id && (
         <CelebrationAnimation habit={habit} />
-      )}
+      )} */}
 
       {/* Confetti Animation */}
       {showConfetti && (
@@ -330,63 +336,19 @@ const HabitItem = ({ habit, onComplete, celebration }: { habit: any, onComplete:
 
 export default function HomePage() {
   const router = useRouter();
-  const { user, stats } = useUser();
-  const { habits, isLoading, completeHabit, createHabit } = useHabits();
-  const [celebration, setCelebration] = useState<number | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newHabitData, setNewHabitData] = useState({
-    name: '',
-    description: '',
-    targetDays: 7,
-    experienceReward: 10,
-    reminderTime: '09:00'
-  });
+  const { habits, completeHabit, refreshHabits } = useHabits();
 
-  const handleCompleteHabit = async (habitId: number) => {
-    try {
-      const result = await completeHabit(habitId);
-      setCelebration(habitId);
-      setTimeout(() => setCelebration(null), 2000);
-      
-      Alert.alert(
-        '¡Hábito Completado! 🎉',
-        `Ganaste ${result.experienceGained} XP\nNueva racha: ${result.newStreak} días${result.leveledUp ? '\n\n¡SUBISTE DE NIVEL! 🚀' : ''}`,
-        [{ text: '¡Genial!' }]
-      );
-    } catch (error) {
-      console.error('Error completing habit:', error);
-    }
-  };
-
-  const handleCreateHabit = async () => {
-    if (!newHabitData.name.trim()) {
-      Alert.alert('Error', 'El nombre del hábito es requerido');
-      return;
-    }
-
-    try {
-      await createHabit(newHabitData);
-      setShowCreateModal(false);
-      setNewHabitData({
-        name: '',
-        description: '',
-        targetDays: 7,
-        experienceReward: 10,
-        reminderTime: '09:00'
-      });
-      Alert.alert('Éxito', 'Hábito creado exitosamente');
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo crear el hábito');
-    }
-  };
+  useEffect(() => {
+    refreshHabits();
+  }, []);
 
   return (
-    <ImageBackground source={backgroundImage} style={styles.container}>
-      <View style={styles.overlay}>
-        <SafeAreaView style={styles.safeArea}>
-          <View style={styles.content}>
+    <ImageBackground source={backgroundImage} className="flex-1">
+      <View className="flex-1 bg-black/50">
+        <SafeAreaView className="flex-1 pt-8">
+          <View className="p-4 max-w-md self-center w-full flex-1">
             {/* Static Header Section */}
-            <View style={styles.staticSection}>
+            <View className="mb-6">
               {/* Weekly Calendar */}
               <WeeklyCalendar />
 
@@ -396,278 +358,76 @@ export default function HomePage() {
 
             {/* Scrollable Habits Section */}
             <ScrollView 
-              style={styles.scrollView}
-              contentContainerStyle={styles.scrollContent}
+              className="flex-1"
+              contentContainerStyle={{ paddingBottom: 24 }}
               showsVerticalScrollIndicator={true}
               indicatorStyle="white"
             >
               {/* Habits List */}
-              <View style={styles.habitsContainer}>
-                {isLoading ? (
-                  <View style={styles.loadingContainer}>
-                    <Text style={styles.loadingText}>Cargando hábitos...</Text>
-                  </View>
-                ) : habits.length === 0 ? (
-                  <View style={styles.emptyContainer}>
-                    <Ionicons name="list-outline" size={48} color="rgba(255, 255, 255, 0.5)" />
-                    <Text style={styles.emptyText}>No tienes hábitos aún</Text>
-                    <Text style={styles.emptySubtext}>Crea tu primer hábito para comenzar</Text>
-                  </View>
-                ) : (
-                  habits.map((habit) => (
-                    <HabitItem
-                      key={habit.id}
-                      habit={habit}
-                      onComplete={handleCompleteHabit}
-                      celebration={celebration}
-                    />
-                  ))
-                )}
+              <View className="gap-4 mb-6">
+                {habits.map((habit) => (
+                  <HabitItem
+                    key={habit.id}
+                    habit={habit}
+                    onComplete={completeHabit}
+                  />
+                ))}
               </View>
 
               {/* New Habit Button */}
               <TouchableOpacity
-                onPress={() => setShowCreateModal(true)}
-                style={styles.newHabitButton}
-                activeOpacity={0.8}
+                onPress={() => router.push('/create-habit')}
+                className="mt-6 w-full"
+                activeOpacity={0.9}
+                style={{
+                  paddingVertical: 16,
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                }}
               >
-                <LinearGradient
-                  colors={['#FFD700', '#F59E0B']}
-                  style={styles.buttonGradient}
-                >
-                  <View style={styles.buttonContent}>
+                <View style={{
+                  width: '100%',
+                  paddingHorizontal: 6,
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  borderWidth: 3,
+                  borderTopColor: '#FFED4A',
+                  borderLeftColor: '#FFED4A',
+                  borderRightColor: '#B8860B',
+                  borderBottomColor: '#B8860B',
+                  shadowColor: '#DAA520',
+                  backgroundColor: '#DAA520',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.8,
+                  shadowRadius: 6,
+                  elevation: 8,
+                }}>
+                  <View className="flex-row items-center justify-center gap-3">
                     <PlusIcon />
-                    <Text style={styles.newHabitButtonText}>Forjar Nuevo Hábito</Text>
+                    <Text className="text-base font-bold text-black">Crear Nuevo Hábito</Text>
                   </View>
-                </LinearGradient>
+                </View>
               </TouchableOpacity>
             </ScrollView>
           </View>
         </SafeAreaView>
       </View>
-
-      {/* Create Habit Modal */}
-      <Modal
-        visible={showCreateModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowCreateModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Forjar Nuevo Hábito</Text>
-            
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Nombre del hábito *</Text>
-              <TextInput
-                style={styles.textInput}
-                value={newHabitData.name}
-                onChangeText={(text) => setNewHabitData(prev => ({ ...prev, name: text }))}
-                placeholder="Ej: Meditación, Ejercicio, NoFap..."
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Descripción (opcional)</Text>
-              <TextInput
-                style={[styles.textInput, styles.textArea]}
-                value={newHabitData.description}
-                onChangeText={(text) => setNewHabitData(prev => ({ ...prev, description: text }))}
-                placeholder="Describe tu hábito..."
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                multiline
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Días objetivo</Text>
-              <TextInput
-                style={styles.textInput}
-                value={newHabitData.targetDays.toString()}
-                onChangeText={(text) => setNewHabitData(prev => ({ ...prev, targetDays: parseInt(text) || 7 }))}
-                placeholder="7"
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                keyboardType="numeric"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Experiencia por completar</Text>
-              <TextInput
-                style={styles.textInput}
-                value={newHabitData.experienceReward.toString()}
-                onChangeText={(text) => setNewHabitData(prev => ({ ...prev, experienceReward: parseInt(text) || 10 }))}
-                placeholder="10"
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                keyboardType="numeric"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Hora de recordatorio</Text>
-              <TextInput
-                style={styles.textInput}
-                value={newHabitData.reminderTime}
-                onChangeText={(text) => setNewHabitData(prev => ({ ...prev, reminderTime: text }))}
-                placeholder="09:00"
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
-              />
-            </View>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setShowCreateModal(false)}
-              >
-                <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancelar</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[styles.modalButton, styles.createButton]}
-                onPress={handleCreateHabit}
-              >
-                <Text style={[styles.buttonText, styles.createButtonText]}>Crear</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  // BlurredCard complex positioning styles
+  blurredImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 1,
   },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Darker overlay for better readability
-  },
-  safeArea: {
-    flex: 1,
-    paddingTop: 32,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 24,
-  },
-  content: {
-    padding: 16,
-    maxWidth: 400,
-    alignSelf: 'center',
-    width: '100%',
-    flex: 1,
-  },
-  staticSection: {
-    marginBottom: 24,
-  },
-  header: {
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 8,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  glassCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
-    padding: 16,
-    marginBottom: 16,
-  },
-  calendarCard: {
-    marginBottom: 24,
-  },
-  calendarHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  calendarTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginLeft: 8,
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  calendarContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  calendarDay: {
-    alignItems: 'center',
-  },
-  calendarDayText: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: 8,
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1,
-  },
-  calendarDate: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  calendarDateToday: {
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    transform: [{ scale: 1.1 }],
-  },
-  calendarDateText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: 'rgba(255, 255, 255, 0.9)',
-  },
-  calendarDateTextToday: {
-    color: '#fff',
-  },
-  mascotCard: {
-    
-  },
-  mascotContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  mascotImageContainer: {
-  },
-  mascotImageBorder: {
-    width: 120,
-    height: 120,
-    overflow: 'hidden',
-  },
-  mascotImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
-  },
+  
+  // Mascot badge with complex shadow
   mascotBadge: {
     position: 'absolute',
     top: -4,
@@ -684,187 +444,15 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
-  mascotMessageContainer: {
-    flex: 1,
-  },
-  mascotMessage: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    padding: 16,
-    borderRadius: 16,
-    borderBottomLeftRadius: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  mascotMessageText: {
-    fontSize: 12,
-    color: '#000',
-    lineHeight: 20,
-    fontWeight: '500',
-  },
-  mascotMessageArrow: {
-    position: 'absolute',
-    bottom: -8,
-    left: 16,
-    width: 0,
-    height: 0,
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderTopWidth: 8,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-  },
-  habitsContainer: {
-    gap: 16,
-    marginBottom: 24,
-  },
-  habitItemContainer: {
-    position: 'relative',
-  },
-  habitCard: {
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  habitCardCompleted: {
-    opacity: 0.8,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-  },
-  habitContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  habitLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    flex: 1,
-  },
-  habitCheckbox: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 215, 0, 0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  habitCheckboxCompleted: {
-    backgroundColor: '#10B981',
-    borderColor: '#10B981',
+  habitCheckboxCompletedShadow: {
     shadowColor: '#10B981',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 8,
   },
-  habitInfo: {
-    flex: 1,
-  },
-  habitHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  habitIcon: {
-    fontSize: 18,
-  },
-  habitName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  habitNameCompleted: {
-    textDecorationLine: 'line-through',
-    opacity: 0.7,
-  },
-  habitStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  statusDone: {
-    backgroundColor: 'rgba(16, 185, 129, 0.3)',
-    borderColor: 'rgba(16, 185, 129, 0.5)',
-  },
-  statusSkip: {
-    backgroundColor: 'rgba(245, 158, 11, 0.3)',
-    borderColor: 'rgba(245, 158, 11, 0.5)',
-  },
-  statusNew: {
-    backgroundColor: 'rgba(59, 130, 246, 0.3)',
-    borderColor: 'rgba(59, 130, 246, 0.5)',
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1,
-  },
-  habitRight: {
-    alignItems: 'flex-end',
-  },
-  streakContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 4,
-  },
-  streakText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFD700',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  durationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  durationText: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1,
-  },
-  celebrationContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10,
-  },
+  
+  // Celebration card with complex styling
   celebrationCard: {
     padding: 24,
     borderWidth: 2,
@@ -875,189 +463,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 12,
-  },
-  celebrationContent: {
-    alignItems: 'center',
-  },
-  celebrationEmoji: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  celebrationTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFD700',
-    marginBottom: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  celebrationSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1,
-  },
-  newHabitButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#FFD700',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  buttonGradient: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-  },
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  newHabitButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  icon: {
-    fontSize: 16,
-    color: '#FFD700',
-  },
-  checkIcon: {
-    fontSize: 14,
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  confettiPiece: {
-    position: 'absolute',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  confettiContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 20,
-  },
-  blurredCardContainer: {
-    position: 'relative',
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  blurredImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 1,
-  },
-  contentOverlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    padding: 16,
-  },
-  loadingContainer: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  emptyContainer: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  emptySubtext: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    borderRadius: 16,
-    padding: 24,
-    width: '90%',
-    maxWidth: 400,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
-  },
-  modalTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  textInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 8,
-    padding: 12,
-    color: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 20,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  createButton: {
-    backgroundColor: '#FFD700',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  cancelButtonText: {
-    color: '#FFFFFF',
-  },
-  createButtonText: {
-    color: '#000000',
   },
 }); 

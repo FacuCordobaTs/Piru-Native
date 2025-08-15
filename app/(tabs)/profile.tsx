@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
-import { useUser } from '@/context/UserProvider';
+// import { useUser } from '@/context/UserProvider';
 
 export default function ProfilePage() {
-  const { userData, clearUserData } = useUser();
+  // const { userData, clearUserData } = useUser();
 
   const profileInfo = {
     name: 'Usuario',
@@ -13,6 +13,15 @@ export default function ProfilePage() {
     level: 1,
     achievements: 2
   };
+
+  const userData = {
+    age: 25,
+    gender: 'Masculino',
+    timeCommitment: '30 minutos',
+    consistency: 'Regular',
+    goals: ['Salud', 'Familia', 'Trabajo'],
+    activities: ['Caminata', 'Lectura', 'Meditación']
+  }
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: '#1a0b2e' }}>
@@ -167,7 +176,7 @@ export default function ProfilePage() {
           
           <TouchableOpacity 
             className="bg-gray-600/20 rounded-2xl p-4 border border-gray-500/30"
-            onPress={clearUserData}
+            // onPress={clearUserData}
           >
             <Text className="text-gray-400 text-center text-lg font-semibold">
               Limpiar Datos (Testing)
